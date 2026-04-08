@@ -1,3 +1,5 @@
-##
+from dataclasses import dataclass
+
+@dataclass
 class TelegamApi:
-    def _init(self): pass
+    pass
