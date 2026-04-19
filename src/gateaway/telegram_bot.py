@@ -1,5 +1,5 @@
 from dataclasses import dataclass
 
 @dataclass
-class TelegamApi:
+class TelegramApi:
     pass
