@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+  backend:
+    build:
+      context: src/.
+      dockerfile: Dockerfile
+    container_name: funpay-ai-api-back
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 8008:3000
+    networks:
+      - funpay_ai_api-network
+    volumes:
+      # - ./logs/:/app/logs/
+      - database-migrations:/app/database/migrations
+
+networks:
+  funpay_ai_api-network:
+    driver: bridge

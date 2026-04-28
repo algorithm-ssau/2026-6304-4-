@@ -1,3 +1,38 @@
-service:
+version: "3.3"
+
+services:
   db:
-    
+    image: postgres:17
+    container_name: funpay_a-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - funpay_ai_api-network
+    restart: always
+
+  appss-redis:
+    container_name: appss-redis
+    image: redis:latest
+    ports:
+      - 6383:6379
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - apps-dev-data:/var/lib/redis
+    networks:
+      - funpay_ai_api-network
+
+volumes:
+  postgres_data:
+    driver: local
+  apps-dev-data:
+    driver: local
+
+networks:
+  funpay_ai_api-network:
+    driver: bridge
