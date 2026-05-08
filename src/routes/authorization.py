@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from schemas.authorization.auth_tg import AuthTg
+from services.user_service import UserService
 
 
 router = APIRouter(prefix="auth")
@@ -10,7 +13,10 @@ async def refresh_token(
     pass
 
 @router.post("/register")
-async def register():
+async def register(
+    body: AuthTg,
+    service: UserService = Depends(get_user_service)
+):
     pass
 
 

@@ -29,5 +29,4 @@ class FunPayApiGateaway:
 
    def get_listener(self):
       runner = self.runner
-      for event in runner.listen(requests_delay=4):
-         yield event
+      return runner.listen(requests_delay=4)
