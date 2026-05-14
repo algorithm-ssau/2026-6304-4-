@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends
 
-from dependency import get_ai_api
-from gateaway.ai_api import AiApi
+# from dependency import get_task_manager
+# from gateaway.ai_api import AiApi
+from models.user import User
+from services.task_manager import TaskManager
+from runtime import task_manager
 
 
-router = APIRouter(prefix="ai")
+router = APIRouter(prefix="/ai")
 
 @router.post("/chat")
 async def chat():
@@ -12,14 +15,18 @@ async def chat():
 
 @router.post("/start")
 async def start(
-    tg_id: int,
-    service: AiApi = Depends(get_ai_api)
+    token: str,
 ):
-    pass
+    service: TaskManager = task_manager
+    user = User()
+    user.golden_token = token
+    user.tg_id = 0
+    user.id = 0
+    await service.start_worker(user)
 
 @router.delete("/stop")
 async def stop_polling(
     tg_id: int,
-    service: str
 ):
-    pass
+    service: TaskManager = task_manager
+    await service.stop_all()
