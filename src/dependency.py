@@ -3,11 +3,12 @@ from fastapi import Depends
 
 from config import get_config
 from database.database import get_session
-from gateaway.ai_api import AiApi
+from gateaway.ai_api import OllamaApi
 from gateaway.funpay_api import FunPayApiGateaway
 from repositories.messages import MessagesRepository
 from repositories.user import UserRepository
 
+from runtime import task_manager
 
 def get_user_repo(session: AsyncSession):
     return UserRepository(
@@ -21,8 +22,11 @@ def get_messages_repo(session: AsyncSession):
 
 def get_ai_api(session: AsyncSession = Depends(get_session)):
     conf = get_config()
-    return AiApi(
+    return OllamaApi(
         url=conf.ai.ai_url,
         model=conf.ai.model,
         messages_repo=get_messages_repo(session)
     )
+
+# def get_task_manager():
+#     return task_manager

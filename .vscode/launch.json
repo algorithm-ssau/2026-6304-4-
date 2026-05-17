@@ -10,11 +10,12 @@
                 "src.app:app",
                 "--reload"
             ],
-            "python": "${command:python.interpreterPath}",
+            "python": "/home/lampower/projects/github/2026-6304-4-/.venv/bin/python",
             "jinja": true,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
-            }
+            },
+            "justMyCode": true
         },
         {
             "name": "Python: Current File",

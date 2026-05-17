@@ -80,22 +80,25 @@ class SQLAlchemyManager:
         ssl_cert_path = os.getenv("SSL_CERT_PATH")
         cls.logger.info("SSL_CERT_PATH: %s", ssl_cert_path)
 
-        app_name = f"appss-back:{os.getenv('HOSTNAME', 'unknown')}"
-
-        connect_args = {
-            "server_settings": {"application_name": app_name},
-            "command_timeout": 60,
-        }
-
         db_url = settings.database_url
-        if ssl_cert_path and os.path.exists(ssl_cert_path):
-            if "?sslmode=" in db_url:
-                db_url = db_url.split("?sslmode=")[0]
+        connect_args = {}
 
-            ctx = ssl.create_default_context(cafile=ssl_cert_path)
-            ctx.verify_mode = ssl.CERT_REQUIRED
-            ctx.check_hostname = True
-            connect_args["ssl"] = ctx
+        # PostgreSQL-specific parameters
+        if "postgresql" in db_url:
+            app_name = f"appss-back:{os.getenv('HOSTNAME', 'unknown')}"
+            connect_args = {
+                "server_settings": {"application_name": app_name},
+                "command_timeout": 60,
+            }
+
+            if ssl_cert_path and os.path.exists(ssl_cert_path):
+                if "?sslmode=" in db_url:
+                    db_url = db_url.split("?sslmode=")[0]
+
+                ctx = ssl.create_default_context(cafile=ssl_cert_path)
+                ctx.verify_mode = ssl.CERT_REQUIRED
+                ctx.check_hostname = True
+                connect_args["ssl"] = ctx
 
         cls.logger.info("Create async engine", extra=dataclasses.asdict(settings))
 
