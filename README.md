@@ -1,0 +1,159 @@
+# FunPay AI Bot
+
+Автоматизированный бот для FunPay с AI-ответами и Telegram управлением.
+
+## Возможности
+
+- 🤖 **AI-ответы**: Автоматическая генерация ответов клиентам через Ollama
+- 📱 **Telegram управление**: Полное управление ботом через Telegram
+- 🔔 **Уведомления**: Мгновенные уведомления о новых заказах
+- 💾 **История сообщений**: Контекстные ответы на основе истории переписки
+- 🔐 **Безопасность**: Защищённое хранение токенов
+
+## Быстрый старт
+
+### 1. Установка зависимостей
+
+```bash
+poetry install
+```
+
+### 2. Настройка окружения
+
+Создайте файл `.env`:
+
+```env
+# AI сервис (Ollama)
+AI_URL=http://localhost:11434
+MODEL=llama3.2
+
+# Telegram бот
+BOT_TOKEN=your_telegram_bot_token
+
+# База данных (SQLite по умолчанию)
+# DATABASE_URL=sqlite+aiosqlite:///./funpay_bot.db
+
+# Окружение
+ENVIRONMENT=dev
+```
+
+### 3. Применение миграций
+
+```bash
+cd src
+poetry run alembic upgrade head
+```
+
+### 4. Запуск
+
+**Терминал 1 - Telegram бот:**
+```bash
+poetry run python src/run_telegram_bot.py
+```
+
+**Терминал 2 - FastAPI сервер:**
+```bash
+cd src
+poetry run uvicorn app:app --reload
+```
+
+## Использование
+
+### Через Telegram
+
+1. Найдите вашего бота в Telegram
+2. Отправьте `/start`
+3. Зарегистрируйтесь: `/register`
+4. Отправьте ваш FunPay `golden_token`
+5. Запустите воркера: `/start_worker`
+
+Подробнее: [TELEGRAM_BOT.md](TELEGRAM_BOT.md)
+
+### Через API
+
+```bash
+# Запустить воркера
+curl -X POST "http://localhost:8000/ai/start?token=YOUR_FUNPAY_TOKEN"
+
+# Остановить воркера
+curl -X DELETE "http://localhost:8000/ai/stop?tg_id=123456"
+```
+
+## Архитектура
+
+```
+┌─────────────────┐
+│  Telegram Bot   │ ← Управление пользователями
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│   FastAPI App   │ ← REST API
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│  Task Manager   │ ← Управление воркерами
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│ FunPay Worker   │ ← Обработка событий
+└─┬──────────────┬┘
+  │              │
+  ▼              ▼
+┌─────────┐  ┌─────────┐
+│ AI API  │  │ FunPay  │
+└─────────┘  └─────────┘
+```
+
+## Документация
+
+- [TELEGRAM_BOT.md](TELEGRAM_BOT.md) - Руководство по Telegram боту
+- [EVENTS_HANDLING.md](EVENTS_HANDLING.md) - Обработка событий FunPay
+- [CLAUDE.md](CLAUDE.md) - Документация для разработчиков
+
+## Технологии
+
+- **FastAPI** - веб-фреймворк
+- **aiogram** - Telegram bot framework
+- **SQLAlchemy** - ORM
+- **Ollama** - локальная AI модель
+- **FunPayAPI** - интеграция с FunPay
+- **SQLite/PostgreSQL** - база данных
+
+## Разработка
+
+### Структура проекта
+
+```
+src/
+├── app.py                 # FastAPI приложение
+├── config.py              # Конфигурация
+├── runtime.py             # Singleton объекты
+├── gateaway/              # Внешние интеграции
+│   ├── ai_api.py         # Ollama API
+│   ├── funpay_api.py     # FunPay API
+│   └── telegram_bot.py   # Telegram бот
+├── workers/               # Воркеры
+│   └── funpay_worker.py  # FunPay воркер
+├── services/              # Бизнес-логика
+│   └── task_manager.py   # Управление воркерами
+├── repositories/          # Работа с БД
+├── models/                # ORM модели
+└── routes/                # API endpoints
+```
+
+### Команды разработки
+
+```bash
+# Создать миграцию
+cd src && poetry run alembic revision --autogenerate -m "description"
+
+# Применить миграции
+cd src && poetry run alembic upgrade head
+
+# Откатить миграцию
+cd src && poetry run alembic downgrade -1
+```
+
+## Лицензия
+
+MIT
