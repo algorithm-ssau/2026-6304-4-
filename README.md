@@ -27,8 +27,8 @@ poetry install
 AI_URL=http://localhost:11434
 MODEL=llama3.2
 
-# Telegram бот
-BOT_TOKEN=your_telegram_bot_token
+# Чат бот
+BOT_TOKEN=your_bot_token
 
 # База данных (SQLite по умолчанию)
 # DATABASE_URL=sqlite+aiosqlite:///./funpay_bot.db
@@ -46,48 +46,26 @@ poetry run alembic upgrade head
 
 ### 4. Запуск
 
-**Терминал 1 - Telegram бот:**
 ```bash
-poetry run python src/run_telegram_bot.py
-```
-
-**Терминал 2 - FastAPI сервер:**
-```bash
-cd src
-poetry run uvicorn app:app --reload
+poetry run python src/run_bot.py
 ```
 
 ## Использование
 
-### Через Telegram
+### Через Мессенджер
 
-1. Найдите вашего бота в Telegram
+1. Найдите вашего бота в мессенджере
 2. Отправьте `/start`
 3. Зарегистрируйтесь: `/register`
 4. Отправьте ваш FunPay `golden_token`
 5. Запустите воркера: `/start_worker`
 
-Подробнее: [TELEGRAM_BOT.md](TELEGRAM_BOT.md)
-
-### Через API
-
-```bash
-# Запустить воркера
-curl -X POST "http://localhost:8000/ai/start?token=YOUR_FUNPAY_TOKEN"
-
-# Остановить воркера
-curl -X DELETE "http://localhost:8000/ai/stop?tg_id=123456"
-```
 
 ## Архитектура
 
 ```
 ┌─────────────────┐
-│  Telegram Bot   │ ← Управление пользователями
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│   FastAPI App   │ ← REST API
+│       Bot       │ ← Управление пользователями
 └────────┬────────┘
          │
 ┌────────▼────────┐
@@ -106,14 +84,13 @@ curl -X DELETE "http://localhost:8000/ai/stop?tg_id=123456"
 
 ## Документация
 
-- [TELEGRAM_BOT.md](TELEGRAM_BOT.md) - Руководство по Telegram боту
 - [EVENTS_HANDLING.md](EVENTS_HANDLING.md) - Обработка событий FunPay
 - [CLAUDE.md](CLAUDE.md) - Документация для разработчиков
 
 ## Технологии
 
 - **FastAPI** - веб-фреймворк
-- **aiogram** - Telegram bot framework
+- **aiogram** - Чат bot framework
 - **SQLAlchemy** - ORM
 - **Ollama** - локальная AI модель
 - **FunPayAPI** - интеграция с FunPay
@@ -125,20 +102,19 @@ curl -X DELETE "http://localhost:8000/ai/stop?tg_id=123456"
 
 ```
 src/
-├── app.py                 # FastAPI приложение
+├── main.py                 # FastAPI приложение
 ├── config.py              # Конфигурация
 ├── runtime.py             # Singleton объекты
 ├── gateaway/              # Внешние интеграции
-│   ├── ai_api.py         # Ollama API
-│   ├── funpay_api.py     # FunPay API
-│   └── telegram_bot.py   # Telegram бот
+│   ├── ai_api.py          # Ollama API
+│   ├── funpay_api.py      # FunPay API
+│   └── chat_bot.py        # чат бот
 ├── workers/               # Воркеры
-│   └── funpay_worker.py  # FunPay воркер
+│   └── funpay_worker.py   # FunPay воркер
 ├── services/              # Бизнес-логика
-│   └── task_manager.py   # Управление воркерами
+│   └── task_manager.py    # Управление воркерами
 ├── repositories/          # Работа с БД
 ├── models/                # ORM модели
-└── routes/                # API endpoints
 ```
 
 ### Команды разработки

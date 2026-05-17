@@ -7,7 +7,6 @@ import FunPayAPI
 from FunPayAPI.common.enums import EventTypes
 
 from database.database import get_session_direct
-from dependency import get_ai_api
 from models.user import User
 
 logger = logging.getLogger(__name__)
@@ -86,12 +85,66 @@ class FunpayWorker:
             )
 
     async def _handle_event(self, event: FunPayAPI.events.BaseEvent):
-        print(event.__dict__)
-        if event.type == EventTypes.NEW_MESSAGE and isinstance(event, FunPayAPI.events.NewMessageEvent):
-            print(f"user {self.account_id} got message: {event.message}")
-            # self.client.get_chat_history(event.)
-            # event.stack.
+        try:
+            if event.type == EventTypes.NEW_MESSAGE and isinstance(event, FunPayAPI.events.NewMessageEvent):
+                await self._handle_new_message(event)
+            elif event.type == EventTypes.NEW_ORDER and isinstance(event, FunPayAPI.events.NewOrderEvent):
+                await self._handle_new_order(event)
+        except Exception:
+            logger.exception("Error handling event")
+
+    async def _handle_new_message(self, event: FunPayAPI.events.NewMessageEvent):
+        """Обрабатывает новое сообщение: отправляет в AI и получает ответ"""
+        from dependency import get_ai_api
+
+        message = event.message
+        chat_id = message.chat_id
+        message_text = message.text or ""
+
+        logger.info(
+            f"New message from chat {chat_id}",
+            extra={"account_id": self.account_id, "message": message_text}
+        )
+
+        try:
             async with get_session_direct() as session:
-                service = get_ai_api(session)
-                service.send_message(self.account_id, event.message)
+                ai_service = get_ai_api(session)
+
+                # Отправляем сообщение в AI и получаем ответ
+                ai_response = await ai_service.send_message(self.account_id, message_text)
+
+                # Отправляем ответ обратно в FunPay
+                if ai_response and self.client:
+                    self.client.send_message(chat_id, ai_response)
+                    logger.info(
+                        f"Sent AI response to chat {chat_id}",
+                        extra={"account_id": self.account_id}
+                    )
+        except Exception:
+            logger.exception(f"Error processing message for account {self.account_id}")
+
+    async def _handle_new_order(self, event: FunPayAPI.events.NewOrderEvent):
+        """Обрабатывает новый заказ: отправляет уведомление в Telegram"""
+        order = event.order
+        order_id = order.id
+
+        logger.info(
+            f"New order {order_id}",
+            extra={"account_id": self.account_id, "order_id": order_id}
+        )
+
+        try:
+            from runtime import chat_bot
+
+            if chat_bot:
+                await chat_bot.send_order_notification(
+                    tg_id=self.account_id,
+                    order_id=order_id
+                )
+                logger.info(
+                    f"Sent order notification to Telegram user {self.account_id}",
+                    extra={"order_id": order_id}
+                )
+        except Exception:
+            logger.exception(f"Error sending order notification for account {self.account_id}")
 

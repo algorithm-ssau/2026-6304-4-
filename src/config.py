@@ -15,15 +15,19 @@ class AiParams(EnvSettings):
     model: str = Field(..., alias="MODEL")
 
 class DBParams(EnvSettings):
-    url: str = Field(..., alias="DATABASE_URL")
+    url: str = Field(default="sqlite+aiosqlite:///./funpay_bot.db", alias="DATABASE_URL")
 
 class GeneralParams(EnvSettings):
-    environment: str = Field(..., alias="ENVIRONMENT")
+    environment: str = Field(default="dev", alias="ENVIRONMENT")
+
+class TelegramParams(EnvSettings):
+    bot_token: str | None = Field(default=None, alias="BOT_TOKEN")
 
 class Config(EnvSettings):
     db: DBParams = Field(default_factory=DBParams)
     general: GeneralParams = Field(default_factory=GeneralParams)
     ai: AiParams = Field(default_factory=AiParams)
+    telegram: TelegramParams = Field(default_factory=TelegramParams)
 
 def get_config():
     return Config()
